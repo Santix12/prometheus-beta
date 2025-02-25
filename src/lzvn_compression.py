@@ -111,12 +111,14 @@ def decompress_lzvn(compressed_data):
             current_pos += 2
             
             # Reconstruct match
-            if len(decompressed) < match_offset:
-                raise ValueError("Invalid match during decompression")
+            if match_offset == 0 or match_offset > len(decompressed):
+                raise ValueError("Invalid match offset during decompression")
             
+            # Repeat characters from previous position
             start_pos = len(decompressed) - match_offset
-            for i in range(match_length):
-                decompressed.append(decompressed[start_pos + i])
+            for _ in range(match_length):
+                decompressed.append(decompressed[start_pos])
+                start_pos += 1
         else:
             # Literal byte
             decompressed.append(token)
