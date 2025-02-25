@@ -56,7 +56,7 @@ def compress_lzvn(data):
         
         # Encode the match or literal
         if best_length > 2:
-            # Encode match (offset, length)
+            # Encode match (length, offset)
             compressed.append(best_length)
             compressed.extend(best_offset.to_bytes(2, byteorder='little'))
             current_pos += best_length
@@ -94,7 +94,7 @@ def decompress_lzvn(compressed_data):
     
     while current_pos < len(compressed_data):
         # Check if we can read next token
-        if current_pos + 1 >= len(compressed_data):
+        if current_pos >= len(compressed_data):
             break
         
         token = compressed_data[current_pos]
@@ -111,10 +111,11 @@ def decompress_lzvn(compressed_data):
             current_pos += 2
             
             # Reconstruct match
+            if len(decompressed) < match_offset:
+                raise ValueError("Invalid match during decompression")
+            
             start_pos = len(decompressed) - match_offset
             for i in range(match_length):
-                if start_pos + i < 0:
-                    raise ValueError("Invalid match during decompression")
                 decompressed.append(decompressed[start_pos + i])
         else:
             # Literal byte
