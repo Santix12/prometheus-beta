@@ -36,5 +36,6 @@ def count_words(input_string: str, separator: str = ' ') -> int:
     if not input_string:
         return 0
     
-    # Split the string and count words
-    return len(input_string.split(separator))
+    # Split the string, filter out empty strings, and count words
+    words = [word for word in input_string.split(separator) if word]
+    return len(words)
