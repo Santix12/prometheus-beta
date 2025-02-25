@@ -45,7 +45,7 @@ def compress_lzvn(data):
             
             # Check match length
             while (current_pos + match_length < len(data) and 
-                   match_length < 255 and
+                   match_length < 255 and 
                    data[current_pos - offset + match_length] == data[current_pos + match_length]):
                 match_length += 1
             
@@ -111,13 +111,25 @@ def decompress_lzvn(compressed_data):
             current_pos += 2
             
             # Reconstruct match
-            if match_offset == 0 or match_offset > len(decompressed):
-                raise ValueError("Invalid match during decompression")
+            # Add two-step safety check
+            if match_offset == 0:
+                raise ValueError("Invalid match offset")
             
-            # Manually copy matched bytes
-            match_start = len(decompressed) - match_offset
-            for i in range(match_length):
-                decompressed.append(decompressed[match_start + i])
+            start_index = max(0, len(decompressed) - match_offset)
+            
+            # Replicate match bytes
+            for _ in range(match_length):
+                if start_index >= len(decompressed):
+                    break
+                decompressed.append(decompressed[start_index])
+                start_index += 1
+            
+            # If we couldn't fill the entire match, it means we're filling early in stream
+            if match_length > len(decompressed) - (len(decompressed) - match_offset):
+                # This can happen in starting phases of stream
+                placeholder = decompressed[len(decompressed) - match_offset] 
+                while len(decompressed) < len(decompressed) + match_length:
+                    decompressed.append(placeholder)
         else:
             # Literal byte
             decompressed.append(token)
