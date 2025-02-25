@@ -26,15 +26,15 @@ def compress_lzvn(data):
     if not data:
         raise ValueError("Input data cannot be empty")
     
-    # Compression output
+    # Compression output 
     compressed = bytearray()
     
-    # Sliding window and lookahead buffer
-    window_size = 4096  # Typical window size for LZ variants
+    # Sliding window settings
+    window_size = 4096
     current_pos = 0
     
     while current_pos < len(data):
-        # Find longest match in the sliding window
+        # Find longest match in sliding window
         best_length = 0
         best_offset = 0
         
@@ -54,9 +54,9 @@ def compress_lzvn(data):
                 best_length = match_length
                 best_offset = offset
         
-        # Encode the match or literal
+        # Encode match or literal
         if best_length > 2:
-            # Encode match (length, offset)
+            # Encode match
             compressed.append(best_length)
             compressed.extend(best_offset.to_bytes(2, byteorder='little'))
             current_pos += best_length
@@ -93,49 +93,41 @@ def decompress_lzvn(compressed_data):
     current_pos = 0
     
     while current_pos < len(compressed_data):
-        # Check if we can read next token
+        # Check for end of stream
         if current_pos >= len(compressed_data):
             break
         
-        try:
-            token = compressed_data[current_pos]
-            current_pos += 1
+        # Read next token
+        token = compressed_data[current_pos]
+        current_pos += 1
+        
+        if token < 255:  # Match token
+            # Ensure sufficient bytes for offset
+            if current_pos + 1 >= len(compressed_data):
+                break
             
-            if token < 255:  # Match token
-                # Ensure we have enough bytes for match
-                match_length = token
-                match_offset = int.from_bytes(compressed_data[current_pos:current_pos+2], byteorder='little')
-                current_pos += 2
-                
-                # Reconstruct match
-                if match_offset == 0:
-                    raise ValueError("Invalid match offset")
-                
-                # Start with the initial reference point
-                start_index = max(0, len(decompressed) - match_offset)
-                
-                # Extended match computation
-                match_remaining = match_length
-                ref_pos = start_index
-                while match_remaining > 0:
-                    # If reference point is beyond current stream, 
-                    # use the last known byte repeatedly
-                    if ref_pos >= len(decompressed):
-                        if decompressed:
-                            last_byte = decompressed[-1]
-                        else:
-                            last_byte = 0  # Default value if empty
-                        decompressed.append(last_byte)
-                    else:
-                        decompressed.append(decompressed[ref_pos])
-                        ref_pos += 1
-                    
-                    match_remaining -= 1
-            else:
-                # Literal byte
+            # Read match length and offset
+            match_length = token
+            match_offset = int.from_bytes(compressed_data[current_pos:current_pos+2], byteorder='little')
+            current_pos += 2
+            
+            # Basic match validation
+            if match_offset == 0:
                 decompressed.append(token)
-        except IndexError:
-            # Incomplete compressed data
-            break
+                continue
+            
+            # Perform match reconstruction
+            start_pos = max(0, len(decompressed) - match_offset)
+            
+            # Replicate bytes from previous stream
+            for _ in range(match_length):
+                if start_pos < len(decompressed):
+                    decompressed.append(decompressed[start_pos])
+                    start_pos += 1
+                else:
+                    break
+        else:
+            # Literal byte
+            decompressed.append(token)
     
     return decompressed
