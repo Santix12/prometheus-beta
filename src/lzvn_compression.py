@@ -45,8 +45,8 @@ def compress_lzvn(data):
             
             # Check match length
             while (current_pos + match_length < len(data) and 
-                   data[current_pos - offset + match_length - 1] == data[current_pos + match_length] and 
-                   match_length < 255):
+                   match_length < 255 and
+                   data[current_pos - offset + match_length - 1] == data[current_pos + match_length]):
                 match_length += 1
             
             # Update best match if found
@@ -111,14 +111,16 @@ def decompress_lzvn(compressed_data):
             current_pos += 2
             
             # Reconstruct match
-            if match_offset == 0 or match_offset > len(decompressed):
+            if match_offset == 0:
                 raise ValueError("Invalid match offset during decompression")
             
-            # Repeat characters from previous position
+            # Ensure match offset is within decompressed data
             start_pos = len(decompressed) - match_offset
-            for _ in range(match_length):
-                decompressed.append(decompressed[start_pos])
-                start_pos += 1
+            if start_pos < 0:
+                raise ValueError("Invalid match offset during decompression")
+            
+            # Copy matched bytes
+            decompressed.extend(decompressed[start_pos:start_pos+match_length])
         else:
             # Literal byte
             decompressed.append(token)
