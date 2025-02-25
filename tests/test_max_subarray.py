@@ -38,4 +38,5 @@ def test_invalid_input_non_numeric():
 
 def test_floating_point_numbers():
     """Test that the function works with floating point numbers"""
-    assert find_max_subarray([1.5, -2.5, 3.5, 4.5]) == 6.5
+    result = find_max_subarray([1.5, -2.5, 3.5, 4.5])
+    assert abs(result - 8.0) < 1e-10  # Use approximate comparison for floating point
