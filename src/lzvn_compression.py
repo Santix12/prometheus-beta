@@ -40,19 +40,19 @@ def compress_lzvn(data):
         
         # Search backwards in the window
         search_start = max(0, current_pos - window_size)
-        for offset in range(current_pos - search_start):
+        for offset in range(1, current_pos - search_start + 1):
             match_length = 0
             
             # Check match length
             while (current_pos + match_length < len(data) and 
                    match_length < 255 and
-                   data[current_pos - offset + match_length - 1] == data[current_pos + match_length]):
+                   data[current_pos - offset + match_length] == data[current_pos + match_length]):
                 match_length += 1
             
             # Update best match if found
             if match_length > best_length:
                 best_length = match_length
-                best_offset = offset + 1
+                best_offset = offset
         
         # Encode the match or literal
         if best_length > 2:
@@ -111,16 +111,13 @@ def decompress_lzvn(compressed_data):
             current_pos += 2
             
             # Reconstruct match
-            if match_offset == 0:
-                raise ValueError("Invalid match offset during decompression")
+            if match_offset == 0 or match_offset > len(decompressed):
+                raise ValueError("Invalid match during decompression")
             
-            # Ensure match offset is within decompressed data
-            start_pos = len(decompressed) - match_offset
-            if start_pos < 0:
-                raise ValueError("Invalid match offset during decompression")
-            
-            # Copy matched bytes
-            decompressed.extend(decompressed[start_pos:start_pos+match_length])
+            # Manually copy matched bytes
+            match_start = len(decompressed) - match_offset
+            for i in range(match_length):
+                decompressed.append(decompressed[match_start + i])
         else:
             # Literal byte
             decompressed.append(token)
