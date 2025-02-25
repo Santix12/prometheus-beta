@@ -97,41 +97,45 @@ def decompress_lzvn(compressed_data):
         if current_pos >= len(compressed_data):
             break
         
-        token = compressed_data[current_pos]
-        current_pos += 1
-        
-        if token < 255:  # Match token
-            # Ensure we have enough bytes for match
-            if current_pos + 1 >= len(compressed_data):
-                raise ValueError("Invalid compressed data")
+        try:
+            token = compressed_data[current_pos]
+            current_pos += 1
             
-            # Extract length and offset
-            match_length = token
-            match_offset = int.from_bytes(compressed_data[current_pos:current_pos+2], byteorder='little')
-            current_pos += 2
-            
-            # Reconstruct match
-            # Add two-step safety check
-            if match_offset == 0:
-                raise ValueError("Invalid match offset")
-            
-            start_index = max(0, len(decompressed) - match_offset)
-            
-            # Replicate match bytes
-            for _ in range(match_length):
-                if start_index >= len(decompressed):
-                    break
-                decompressed.append(decompressed[start_index])
-                start_index += 1
-            
-            # If we couldn't fill the entire match, it means we're filling early in stream
-            if match_length > len(decompressed) - (len(decompressed) - match_offset):
-                # This can happen in starting phases of stream
-                placeholder = decompressed[len(decompressed) - match_offset] 
-                while len(decompressed) < len(decompressed) + match_length:
-                    decompressed.append(placeholder)
-        else:
-            # Literal byte
-            decompressed.append(token)
+            if token < 255:  # Match token
+                # Ensure we have enough bytes for match
+                match_length = token
+                match_offset = int.from_bytes(compressed_data[current_pos:current_pos+2], byteorder='little')
+                current_pos += 2
+                
+                # Reconstruct match
+                if match_offset == 0:
+                    raise ValueError("Invalid match offset")
+                
+                # Start with the initial reference point
+                start_index = max(0, len(decompressed) - match_offset)
+                
+                # Extended match computation
+                match_remaining = match_length
+                ref_pos = start_index
+                while match_remaining > 0:
+                    # If reference point is beyond current stream, 
+                    # use the last known byte repeatedly
+                    if ref_pos >= len(decompressed):
+                        if decompressed:
+                            last_byte = decompressed[-1]
+                        else:
+                            last_byte = 0  # Default value if empty
+                        decompressed.append(last_byte)
+                    else:
+                        decompressed.append(decompressed[ref_pos])
+                        ref_pos += 1
+                    
+                    match_remaining -= 1
+            else:
+                # Literal byte
+                decompressed.append(token)
+        except IndexError:
+            # Incomplete compressed data
+            break
     
     return decompressed
