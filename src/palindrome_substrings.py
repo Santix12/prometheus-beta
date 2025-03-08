@@ -21,12 +21,11 @@ def find_shortest_palindrome_substrings(s):
     if not s:
         return []
     
-    # Dictionary to store palindromes by length
+    # Dictionary to group palindromes by length
     palindrome_lengths = {}
     
-    # Track the lengths of palindromes
-    for length_type in ['min', 'current', 'max']:
-        palindrome_lengths[length_type] = set()
+    # Track shortest length of palindromes
+    min_length = float('inf')
     
     # Check all possible substrings
     for i in range(len(s)):
@@ -36,21 +35,22 @@ def find_shortest_palindrome_substrings(s):
             
             # Check if substring is a palindrome
             if substring == substring[::-1]:
-                # Track palindrome length
+                # Update length tracking
                 length = len(substring)
-                palindrome_lengths['current'].add(substring)
                 
-                # Update min/max as we go
-                if not palindrome_lengths['min'] or length < len(list(palindrome_lengths['min'])[0]):
-                    palindrome_lengths['min'] = {substring}
-                elif length == len(list(palindrome_lengths['min'])[0]):
-                    palindrome_lengths['min'].add(substring)
-                
-                # Track max length if needed for future use
-                if not palindrome_lengths['max'] or length > len(list(palindrome_lengths['max'])[0]):
-                    palindrome_lengths['max'] = {substring}
-                elif length == len(list(palindrome_lengths['max'])[0]):
-                    palindrome_lengths['max'].add(substring)
+                if length < min_length:
+                    # If we find a shorter palindrome, reset the dictionary
+                    palindrome_lengths = {length: {substring}}
+                    min_length = length
+                elif length == min_length:
+                    # If equal to current shortest, add to the set
+                    if length not in palindrome_lengths:
+                        palindrome_lengths[length] = set()
+                    palindrome_lengths[length].add(substring)
     
-    # Return sorted list of minimum length palindromes
-    return sorted(list(palindrome_lengths['min']))
+    # If no palindromes found
+    if not palindrome_lengths:
+        return []
+    
+    # Return sorted list of shortest palindromes
+    return sorted(list(palindrome_lengths[min_length]))
