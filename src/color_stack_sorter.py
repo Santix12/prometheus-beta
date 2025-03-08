@@ -43,49 +43,41 @@ class ColorStackSorter:
         # Reset moves
         self.moves = []
         
-        # Color sorting priority
-        color_order = ['red', 'blue', 'green']
+        # Color sorting priority (least to most)
+        color_priority = ['red', 'blue', 'green']
         
         # Maximum iterations to prevent infinite loop
-        max_iterations = len(self.stacks['red']) * 15
+        max_iterations = len(self.stacks['red']) * 20
         
+        # Continue sorting until stacks are uniform or max iterations reached
         while not self._is_sorted() and len(self.moves) < max_iterations:
-            # Analyze current stack state
+            # Find stacks with multiple colors
             mixed_stacks = [color for color, stack in self.stacks.items() 
-                            if len(set(stack)) > 1]
+                           if len(set(stack)) > 1]
             
             if not mixed_stacks:
                 break
             
-            for from_color in color_order:
+            # Systematic sorting strategy
+            for from_color in color_priority:
                 if from_color in mixed_stacks:
-                    # Count colors in the source stack
-                    color_counts = Counter(self.stacks[from_color])
-                    
-                    # Identify colors to move
-                    colors_to_move = [color for color, count in color_counts.items() if count > 0]
-                    
-                    # Prioritize moving mixed colors
-                    colors_to_move.sort(key=color_counts.get, reverse=True)
+                    # Analyze color distribution in source stack
+                    source_colors = Counter(self.stacks[from_color])
                     
                     # Find destination colors
-                    dest_colors = [c for c in color_order if c != from_color]
+                    dest_colors = [c for c in color_priority if c != from_color]
                     
-                    # Try to move each distinct color
-                    for move_color in colors_to_move:
-                        moved = False
-                        for dest_color in dest_colors:
-                            # Move if destination stack doesn't have this color
-                            if move_color not in self.stacks[dest_color]:
-                                # Find and move the first ball of this color
-                                ball_index = self.stacks[from_color].index(move_color)
-                                ball = self.stacks[from_color].pop(ball_index)
-                                self.stacks[dest_color].append(ball)
-                                self.moves.append((from_color, dest_color))
-                                moved = True
-                                break
-                        
-                        if moved:
+                    # Try to move the most frequent color out
+                    most_freq_color = max(source_colors, key=source_colors.get)
+                    
+                    for dest_color in dest_colors:
+                        # Move to destination that doesn't have this color
+                        if most_freq_color not in self.stacks[dest_color]:
+                            # Find and remove the ball to move
+                            ball_index = self.stacks[from_color].index(most_freq_color)
+                            ball = self.stacks[from_color].pop(ball_index)
+                            self.stacks[dest_color].append(ball)
+                            self.moves.append((from_color, dest_color))
                             break
         
         return self.moves
@@ -97,4 +89,5 @@ class ColorStackSorter:
         Returns:
             bool: True if stacks are sorted, False otherwise
         """
+        # Check if each stack has at most one unique color
         return all(len(set(stack)) <= 1 for stack in self.stacks.values())
