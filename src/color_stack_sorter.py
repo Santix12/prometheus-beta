@@ -1,5 +1,4 @@
 from typing import List, Tuple
-from collections import Counter
 
 class ColorStackSorter:
     def __init__(self, red_stack: List[str], blue_stack: List[str], green_stack: List[str]):
@@ -25,7 +24,7 @@ class ColorStackSorter:
                 all(ball.lower() in valid_colors for ball in green_stack)):
             raise ValueError("Invalid ball colors. Only red, blue, and green are allowed.")
         
-        # Normalize ball colors to lowercase
+        # Normalize ball colors to lowercase and store original input
         self.stacks = {
             'red': [ball.lower() for ball in red_stack],
             'blue': [ball.lower() for ball in blue_stack],
@@ -43,38 +42,47 @@ class ColorStackSorter:
         # Reset moves
         self.moves = []
         
-        # Color sorting priority
-        color_order = ['red', 'blue', 'green']
-        max_iterations = len(self.stacks['red']) * 10  # Prevent infinite loop
+        # Predefined color priority for sorting
+        color_priorities = {
+            'red': 1,
+            'blue': 2,
+            'green': 3
+        }
         
+        # Maximum iterations to prevent infinite loop
+        max_iterations = len(self.stacks['red']) * 10
+        
+        # Continue sorting until all stacks are single color
         while not self._is_sorted() and len(self.moves) < max_iterations:
-            # Find all mixed stacks
+            # Find stacks with mixed colors
             mixed_stacks = [color for color, stack in self.stacks.items() if len(set(stack)) > 1]
             
             if not mixed_stacks:
                 break
             
-            # Prioritize sorting by color frequency
-            for color in color_order:
-                if color in mixed_stacks:
-                    # Count colors in the stack
-                    color_counts = Counter(self.stacks[color])
-                    
-                    # Find the least frequent color to move
-                    least_color = min(color_counts, key=color_counts.get)
-                    
-                    # Find destination stacks
-                    destination_colors = [c for c in color_order if c != color]
-                    
-                    # Try to move to each destination
-                    for dest_color in destination_colors:
-                        if least_color not in self.stacks[dest_color]:
-                            # Move the ball
-                            ball_index = self.stacks[color].index(least_color)
-                            ball = self.stacks[color].pop(ball_index)
-                            self.stacks[dest_color].append(ball)
-                            self.moves.append((color, dest_color))
-                            break
+            # Sort mixed stacks by priority
+            mixed_stacks.sort(key=lambda x: color_priorities[x])
+            
+            # Pick the highest priority mixed stack
+            from_color = mixed_stacks[0]
+            
+            # Find destination colors
+            other_colors = [c for c in color_priorities.keys() if c != from_color]
+            other_colors.sort(key=lambda x: color_priorities[x])
+            
+            # Try to move to destination
+            for dest_color in other_colors:
+                # Find a ball that doesn't match current stack to move
+                for ball in self.stacks[from_color]:
+                    if ball not in set(self.stacks[dest_color]):
+                        # Remove from source, add to destination
+                        self.stacks[from_color].remove(ball)
+                        self.stacks[dest_color].append(ball)
+                        self.moves.append((from_color, dest_color))
+                        break
+                
+                # Break outer loop if a move was made
+                break
         
         return self.moves
 
