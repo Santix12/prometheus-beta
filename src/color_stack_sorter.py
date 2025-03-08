@@ -42,33 +42,43 @@ class ColorStackSorter:
         # Reset moves
         self.moves = []
         
-        # Continue sorting until stacks are uniform or no more moves possible
-        max_iterations = len(self.stacks['red']) * 3  # Prevent infinite loop
-        iterations = 0
+        # Continue sorting until stacks are uniform
+        max_iterations = len(self.stacks['red']) * 6  # Prevent infinite loop
+        color_mapping = {
+            'red': ['blue', 'green'],
+            'blue': ['red', 'green'],
+            'green': ['red', 'blue']
+        }
         
-        while not self._is_sorted() and iterations < max_iterations:
-            # Find stacks with multiple colors
+        while not self._is_sorted():
+            # Check if we've exceeded max iterations
+            if len(self.moves) >= max_iterations:
+                break
+            
+            # Find any stack with multiple colors
             mixed_stacks = [color for color, stack in self.stacks.items() if len(set(stack)) > 1]
             
             if not mixed_stacks:
                 break
             
-            # Priority is to work on the most mixed stacks first
-            max_color = mixed_stacks[0]
+            # Pick the first mixed stack
+            from_color = mixed_stacks[0]
             
-            # Find a destination stack with fewer colors
-            color_order = ['red', 'blue', 'green']
-            min_color = next(
-                (color for color in color_order if color != max_color and len(set(self.stacks[color])) <= 1), 
-                color_order[-1]  # Default to last color if no better destination
-            )
+            # Determine potential destination colors
+            potential_destinations = color_mapping[from_color]
             
-            # Move a ball
-            ball = self.stacks[max_color].pop()
-            self.stacks[min_color].append(ball)
-            self.moves.append((max_color, min_color))
-            
-            iterations += 1
+            # Move to destination that will help sorting
+            for dest_color in potential_destinations:
+                # Choose a ball from source that is different from destination stack
+                if from_color != dest_color:
+                    # Find a ball that doesn't belong
+                    for ball in self.stacks[from_color]:
+                        if ball not in set(self.stacks[dest_color]):
+                            # Remove from source, add to destination
+                            self.stacks[from_color].remove(ball)
+                            self.stacks[dest_color].append(ball)
+                            self.moves.append((from_color, dest_color))
+                            break
         
         return self.moves
 
