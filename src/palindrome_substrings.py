@@ -21,11 +21,11 @@ def find_shortest_palindrome_substrings(s):
     if not s:
         return []
     
-    # Dictionary to group palindromes by length
-    palindrome_lengths = {}
+    # Dictionary to track palindromes
+    palindromes = {}
     
-    # Track shortest length of palindromes
-    min_length = float('inf')
+    # Minimum length tracking
+    lengths = []
     
     # Check all possible substrings
     for i in range(len(s)):
@@ -35,22 +35,30 @@ def find_shortest_palindrome_substrings(s):
             
             # Check if substring is a palindrome
             if substring == substring[::-1]:
-                # Update length tracking
+                # Track length of palindrome
                 length = len(substring)
                 
-                if length < min_length:
-                    # If we find a shorter palindrome, reset the dictionary
-                    palindrome_lengths = {length: {substring}}
-                    min_length = length
-                elif length == min_length:
-                    # If equal to current shortest, add to the set
-                    if length not in palindrome_lengths:
-                        palindrome_lengths[length] = set()
-                    palindrome_lengths[length].add(substring)
+                # Initialize length if not yet tracked
+                if length not in palindromes:
+                    palindromes[length] = set()
+                
+                # Add to current palindromes
+                palindromes[length].add(substring)
     
-    # If no palindromes found
-    if not palindrome_lengths:
+    # Find the minimum length of palindromes
+    if not palindromes:
         return []
     
-    # Return sorted list of shortest palindromes
-    return sorted(list(palindrome_lengths[min_length]))
+    # Find the minimum length
+    min_length = min(palindromes.keys())
+    
+    # Get max length we want to include (up to the original string)
+    max_include_length = min(len(s), min_length * 2)
+    
+    # Collect all palindromes up to max length
+    result = set()
+    for length in sorted(palindromes.keys()):
+        if length <= max_include_length:
+            result.update(palindromes[length])
+    
+    return sorted(list(result))
