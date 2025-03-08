@@ -47,16 +47,23 @@ class ColorStackSorter:
         iterations = 0
         
         while not self._is_sorted() and iterations < max_iterations:
-            # Find the stack with the most color variation
-            max_color = self._get_max_color()
+            # Find stacks with multiple colors
+            mixed_stacks = [color for color, stack in self.stacks.items() if len(set(stack)) > 1]
             
-            # Find the stack with the least color variation 
-            min_color = self._get_min_color()
+            if not mixed_stacks:
+                break
             
-            if max_color == min_color:
-                break  # Cannot make further progress
+            # Priority is to work on the most mixed stacks first
+            max_color = mixed_stacks[0]
             
-            # Move a ball from the max color stack to the min color stack
+            # Find a destination stack with fewer colors
+            color_order = ['red', 'blue', 'green']
+            min_color = next(
+                (color for color in color_order if color != max_color and len(set(self.stacks[color])) <= 1), 
+                color_order[-1]  # Default to last color if no better destination
+            )
+            
+            # Move a ball
             ball = self.stacks[max_color].pop()
             self.stacks[min_color].append(ball)
             self.moves.append((max_color, min_color))
@@ -78,35 +85,3 @@ class ColorStackSorter:
                 return False
         
         return True
-
-    def _get_max_color(self) -> str:
-        """
-        Find the color of the stack that should give up a ball.
-        
-        Returns:
-            str: Color of the stack to move from
-        """
-        # Order of precedence: green > blue > red
-        color_order = ['green', 'blue', 'red']
-        for color in color_order:
-            # Choose color with most color variation
-            if len(set(self.stacks[color])) > 1:
-                return color
-        
-        return color_order[0]  # Default to green if no mixed stacks
-
-    def _get_min_color(self) -> str:
-        """
-        Find the color of the stack that should receive a ball.
-        
-        Returns:
-            str: Color of the stack to move to
-        """
-        # Order of precedence: red < blue < green
-        color_order = ['red', 'blue', 'green']
-        for color in color_order:
-            # Prefer stacks with fewer unique colors
-            if len(set(self.stacks[color])) < len(set(self.stacks[color_order[0]])):
-                return color
-        
-        return color_order[2]  # Default to green
