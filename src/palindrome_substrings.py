@@ -49,16 +49,15 @@ def find_shortest_palindrome_substrings(s):
     # Find the minimum length of palindromes
     min_length = min(all_palindromes.keys())
     
+    # Find max palindrome length to include (entire string)
+    max_length = len(s)
+    
     # Create result to include all palindromes up to full string
     result = set()
     
-    # Include single characters, 2-char palindromes, etc up to full string
-    for length in range(1, len(s) + 1):
+    # Include palindromes of each length up to the full string
+    for length in range(min_length, max_length + 1):
         if length in all_palindromes:
             result.update(all_palindromes[length])
-        
-        # Stop when we've reached beyond 2x the shortest palindrome
-        if length > min_length * 2:
-            break
     
     return sorted(list(result))
