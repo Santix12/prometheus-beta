@@ -21,11 +21,8 @@ def find_shortest_palindrome_substrings(s):
     if not s:
         return []
     
-    # Dictionary to track palindromes
-    palindromes = {}
-    
-    # Minimum length tracking
-    lengths = []
+    # Comprehensive tracking of palindromes
+    all_palindromes = {}
     
     # Check all possible substrings
     for i in range(len(s)):
@@ -38,27 +35,30 @@ def find_shortest_palindrome_substrings(s):
                 # Track length of palindrome
                 length = len(substring)
                 
-                # Initialize length if not yet tracked
-                if length not in palindromes:
-                    palindromes[length] = set()
+                # Initialize length tracking
+                if length not in all_palindromes:
+                    all_palindromes[length] = set()
                 
-                # Add to current palindromes
-                palindromes[length].add(substring)
+                # Add palindrome
+                all_palindromes[length].add(substring)
     
-    # Find the minimum length of palindromes
-    if not palindromes:
+    # If no palindromes found
+    if not all_palindromes:
         return []
     
-    # Find the minimum length
-    min_length = min(palindromes.keys())
+    # Find the minimum length of palindromes
+    min_length = min(all_palindromes.keys())
     
-    # Get max length we want to include (up to the original string)
-    max_include_length = min(len(s), min_length * 2)
-    
-    # Collect all palindromes up to max length
+    # Create result to include all palindromes up to full string
     result = set()
-    for length in sorted(palindromes.keys()):
-        if length <= max_include_length:
-            result.update(palindromes[length])
+    
+    # Include single characters, 2-char palindromes, etc up to full string
+    for length in range(1, len(s) + 1):
+        if length in all_palindromes:
+            result.update(all_palindromes[length])
+        
+        # Stop when we've reached beyond 2x the shortest palindrome
+        if length > min_length * 2:
+            break
     
     return sorted(list(result))
