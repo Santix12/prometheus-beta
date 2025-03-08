@@ -28,9 +28,11 @@ def sparse_matrix_multiply(matrix_a, matrix_b):
     if not matrix_a or not matrix_b:
         return {}
     
-    # Compute column indices for matrix B
+    # Precompute B columns and rows for efficiency
     b_cols = set()
-    for row_vec in matrix_b.values():
+    b_rows = {}
+    for row_idx, row_vec in matrix_b.items():
+        b_rows[row_idx] = row_vec
         b_cols.update(row_vec.keys())
     
     # Initialize result matrix
@@ -45,8 +47,9 @@ def sparse_matrix_multiply(matrix_a, matrix_b):
             # Compute dot product for this cell
             cell_value = 0
             for a_col, a_val in a_row_vec.items():
-                if a_col in matrix_b:
-                    b_row_vec = matrix_b[a_col]
+                # If this column index exists in B's rows
+                if a_col in b_rows:
+                    b_row_vec = b_rows[a_col]
                     if b_col in b_row_vec:
                         cell_value += a_val * b_row_vec[b_col]
             
