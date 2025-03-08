@@ -24,10 +24,11 @@ class ColorStackSorter:
                 all(ball.lower() in valid_colors for ball in green_stack)):
             raise ValueError("Invalid ball colors. Only red, blue, and green are allowed.")
         
+        # Normalize ball colors to lowercase
         self.stacks = {
-            'red': red_stack,
-            'blue': blue_stack,
-            'green': green_stack
+            'red': [ball.lower() for ball in red_stack],
+            'blue': [ball.lower() for ball in blue_stack],
+            'green': [ball.lower() for ball in green_stack]
         }
         self.moves = []
 
@@ -41,12 +42,15 @@ class ColorStackSorter:
         # Reset moves
         self.moves = []
         
-        # Continue until stacks are sorted
-        while not self._is_sorted():
-            # Find the stack with the 'highest' color to move from
+        # Continue sorting until stacks are uniform or no more moves possible
+        max_iterations = len(self.stacks['red']) * 3  # Prevent infinite loop
+        iterations = 0
+        
+        while not self._is_sorted() and iterations < max_iterations:
+            # Find the stack with the most color variation
             max_color = self._get_max_color()
             
-            # Find the stack with the 'lowest' color to move to
+            # Find the stack with the least color variation 
             min_color = self._get_min_color()
             
             if max_color == min_color:
@@ -56,6 +60,8 @@ class ColorStackSorter:
             ball = self.stacks[max_color].pop()
             self.stacks[min_color].append(ball)
             self.moves.append((max_color, min_color))
+            
+            iterations += 1
         
         return self.moves
 
@@ -68,7 +74,7 @@ class ColorStackSorter:
         """
         # Check if each stack has only one unique color
         for stack_name, stack in self.stacks.items():
-            if len(set(ball.lower() for ball in stack)) > 1:
+            if len(set(stack)) > 1:
                 return False
         
         return True
@@ -83,6 +89,7 @@ class ColorStackSorter:
         # Order of precedence: green > blue > red
         color_order = ['green', 'blue', 'red']
         for color in color_order:
+            # Choose color with most color variation
             if len(set(self.stacks[color])) > 1:
                 return color
         
@@ -98,6 +105,7 @@ class ColorStackSorter:
         # Order of precedence: red < blue < green
         color_order = ['red', 'blue', 'green']
         for color in color_order:
+            # Prefer stacks with fewer unique colors
             if len(set(self.stacks[color])) < len(set(self.stacks[color_order[0]])):
                 return color
         
