@@ -43,38 +43,47 @@ class ColorStackSorter:
         # Reset moves
         self.moves = []
         
-        # Color reference order
+        # Color sorting order
         color_order = ['red', 'blue', 'green']
         
         # Maximum iterations to prevent infinite loop
-        max_iterations = len(self.stacks['red']) * 30
+        max_iterations = len(self.stacks['red']) * 50
         
         while not self._is_sorted() and len(self.moves) < max_iterations:
-            # Perform multiple passes through color groups
-            for source_index, from_color in enumerate(color_order):
-                # Find destination colors
-                dest_colors = [c for c in color_order if c != from_color]
+            # Identify mixed stacks
+            mixed_stacks = [color for color, stack in self.stacks.items() 
+                            if len(set(stack)) > 1]
+            
+            if not mixed_stacks:
+                break
+            
+            # Sort mixed stacks based on color order
+            mixed_stacks.sort(key=lambda x: color_order.index(x))
+            
+            # Take the first mixed stack
+            from_color = mixed_stacks[0]
+            
+            # Possible destination colors
+            dest_colors = [c for c in color_order if c != from_color]
+            
+            # Try to move to each destination
+            for dest_color in dest_colors:
+                # Find colors to move out of source stack
+                source_colors = set(self.stacks[from_color])
                 
-                # Analyze source stack
-                source_counter = Counter(self.stacks[from_color])
+                # Find a color to move
+                for move_color in source_colors:
+                    # Ensure destination doesn't have this color
+                    if move_color not in self.stacks[dest_color]:
+                        # Find and move the ball
+                        ball_index = self.stacks[from_color].index(move_color)
+                        ball = self.stacks[from_color].pop(ball_index)
+                        self.stacks[dest_color].append(ball)
+                        self.moves.append((from_color, dest_color))
+                        break
                 
-                # If stack is mixed, try to resolve
-                if len(source_counter) > 1:
-                    # Priority colors for moving
-                    move_colors = sorted(source_counter.keys(), 
-                                         key=lambda x: color_order.index(x))
-                    
-                    # Try to move each color
-                    for move_color in move_colors:
-                        for dest_color in dest_colors:
-                            # Can we move to this destination?
-                            if move_color not in self.stacks[dest_color]:
-                                # Find and move the ball
-                                ball_index = self.stacks[from_color].index(move_color)
-                                ball = self.stacks[from_color].pop(ball_index)
-                                self.stacks[dest_color].append(ball)
-                                self.moves.append((from_color, dest_color))
-                                break
+                # Break after moving from first mixed stack
+                break
         
         return self.moves
 
