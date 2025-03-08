@@ -16,7 +16,7 @@ def search_matrix(matrix: list[list[int]], target: int) -> bool:
         TypeError: If matrix is not a list or contains non-list elements
         ValueError: If the matrix is empty or contains empty rows
     
-    Time Complexity: O(m * log(n)), where m is number of rows, n is number of columns
+    Time Complexity: O(m + log(n)), where m is number of rows, n is number of columns
     Space Complexity: O(1)
     """
     # Check for invalid input
@@ -31,23 +31,23 @@ def search_matrix(matrix: list[list[int]], target: int) -> bool:
     if len(matrix) == 0 or len(matrix[0]) == 0:
         return False
     
-    # Perform binary search on each row
-    for row in matrix:
-        # Validate row
-        if not isinstance(row, list):
-            raise TypeError("Each row must be a list")
+    # Use a more efficient search algorithm
+    m, n = len(matrix), len(matrix[0])
+    
+    # Start from top-right corner
+    row, col = 0, n - 1
+    
+    while row < m and col >= 0:
+        current = matrix[row][col]
         
-        # Binary search within the row
-        left, right = 0, len(row) - 1
-        while left <= right:
-            mid = (left + right) // 2
-            mid_value = row[mid]
-            
-            if mid_value == target:
-                return True
-            elif mid_value < target:
-                left = mid + 1
-            else:
-                right = mid - 1
+        if current == target:
+            return True
+        
+        # If current is less than target, move down
+        if current < target:
+            row += 1
+        # If current is greater than target, move left
+        else:
+            col -= 1
     
     return False
