@@ -59,4 +59,4 @@ def test_matrix_search_performance():
     
     # Verify both existing and non-existing elements
     assert search_matrix(matrix, 42 * 17) == True
-    assert search_matrix(matrix, 10000) == False
+    assert search_matrix(matrix, 100001) == False  # A number definitely not in the matrix
