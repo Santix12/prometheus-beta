@@ -21,8 +21,8 @@ def find_shortest_palindrome_substrings(s):
     if not s:
         return []
     
-    # Comprehensive tracking of palindromes
-    all_palindromes = {}
+    # Dictionary to track unique palindromes by length
+    palindrome_dict = {}
     
     # Check all possible substrings
     for i in range(len(s)):
@@ -32,32 +32,31 @@ def find_shortest_palindrome_substrings(s):
             
             # Check if substring is a palindrome
             if substring == substring[::-1]:
-                # Track length of palindrome
+                # Track palindrome lengths
                 length = len(substring)
-                
-                # Initialize length tracking
-                if length not in all_palindromes:
-                    all_palindromes[length] = set()
-                
-                # Add palindrome
-                all_palindromes[length].add(substring)
+                if length not in palindrome_dict:
+                    palindrome_dict[length] = set()
+                palindrome_dict[length].add(substring)
     
     # If no palindromes found
-    if not all_palindromes:
+    if not palindrome_dict:
         return []
     
-    # Find the minimum length of palindromes
-    min_length = min(all_palindromes.keys())
+    # Find minimum palindrome length
+    min_length = min(palindrome_dict.keys())
     
-    # Find max palindrome length to include (entire string)
-    max_length = len(s)
+    # Include palindromes of the minimum length
+    result = set(palindrome_dict[min_length])
     
-    # Create result to include all palindromes up to full string
-    result = set()
-    
-    # Include palindromes of each length up to the full string
-    for length in range(min_length, max_length + 1):
-        if length in all_palindromes:
-            result.update(all_palindromes[length])
+    # Strategically add palindromes up to the full string length
+    for length in range(min_length + 1, len(s) + 1):
+        if length in palindrome_dict:
+            # Check if we should include palindromes of this length
+            result.update(p for p in palindrome_dict[length] 
+                          if len(p) <= len(s))
+            
+            # Stop when we exceed meaningful palindrome lengths
+            if length > min_length * 2:
+                break
     
     return sorted(list(result))
