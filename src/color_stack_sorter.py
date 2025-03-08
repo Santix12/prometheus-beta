@@ -25,7 +25,7 @@ class ColorStackSorter:
                 all(ball.lower() in valid_colors for ball in green_stack)):
             raise ValueError("Invalid ball colors. Only red, blue, and green are allowed.")
         
-        # Normalize ball colors to lowercase and store
+        # Normalize ball colors to lowercase
         self.stacks = {
             'red': [ball.lower() for ball in red_stack],
             'blue': [ball.lower() for ball in blue_stack],
@@ -43,42 +43,38 @@ class ColorStackSorter:
         # Reset moves
         self.moves = []
         
-        # Color sorting priority (least to most)
-        color_priority = ['red', 'blue', 'green']
+        # Color reference order
+        color_order = ['red', 'blue', 'green']
         
         # Maximum iterations to prevent infinite loop
-        max_iterations = len(self.stacks['red']) * 20
+        max_iterations = len(self.stacks['red']) * 30
         
-        # Continue sorting until stacks are uniform or max iterations reached
         while not self._is_sorted() and len(self.moves) < max_iterations:
-            # Find stacks with multiple colors
-            mixed_stacks = [color for color, stack in self.stacks.items() 
-                           if len(set(stack)) > 1]
-            
-            if not mixed_stacks:
-                break
-            
-            # Systematic sorting strategy
-            for from_color in color_priority:
-                if from_color in mixed_stacks:
-                    # Analyze color distribution in source stack
-                    source_colors = Counter(self.stacks[from_color])
+            # Perform multiple passes through color groups
+            for source_index, from_color in enumerate(color_order):
+                # Find destination colors
+                dest_colors = [c for c in color_order if c != from_color]
+                
+                # Analyze source stack
+                source_counter = Counter(self.stacks[from_color])
+                
+                # If stack is mixed, try to resolve
+                if len(source_counter) > 1:
+                    # Priority colors for moving
+                    move_colors = sorted(source_counter.keys(), 
+                                         key=lambda x: color_order.index(x))
                     
-                    # Find destination colors
-                    dest_colors = [c for c in color_priority if c != from_color]
-                    
-                    # Try to move the most frequent color out
-                    most_freq_color = max(source_colors, key=source_colors.get)
-                    
-                    for dest_color in dest_colors:
-                        # Move to destination that doesn't have this color
-                        if most_freq_color not in self.stacks[dest_color]:
-                            # Find and remove the ball to move
-                            ball_index = self.stacks[from_color].index(most_freq_color)
-                            ball = self.stacks[from_color].pop(ball_index)
-                            self.stacks[dest_color].append(ball)
-                            self.moves.append((from_color, dest_color))
-                            break
+                    # Try to move each color
+                    for move_color in move_colors:
+                        for dest_color in dest_colors:
+                            # Can we move to this destination?
+                            if move_color not in self.stacks[dest_color]:
+                                # Find and move the ball
+                                ball_index = self.stacks[from_color].index(move_color)
+                                ball = self.stacks[from_color].pop(ball_index)
+                                self.stacks[dest_color].append(ball)
+                                self.moves.append((from_color, dest_color))
+                                break
         
         return self.moves
 
@@ -89,5 +85,5 @@ class ColorStackSorter:
         Returns:
             bool: True if stacks are sorted, False otherwise
         """
-        # Check if each stack has at most one unique color
+        # Verify each stack has at most one unique color
         return all(len(set(stack)) <= 1 for stack in self.stacks.values())
