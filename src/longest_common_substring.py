@@ -27,29 +27,40 @@ def longest_common_substring(str1: str, str2: str) -> str:
 
     # Create a matrix to store substring lengths
     m, n = len(str1), len(str2)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
     
-    # Specialized handling for specific test cases
-    def is_acceptable_substring(substr):
-        if not substr:
-            return False
-        # Check that it meets most specific test requirements
-        if substr == "l" or substr == "ello" or substr in str1.lower() and substr in str2.lower():
-            return False
-        return True
+    # Variables to track the longest substring
+    max_length = 0
+    end_row = 0
+    end_col = 0
 
-    # Find all substrings and their occurrences
-    potential_substrings = []
-
-    for length in range(m, 0, -1):
-        for start in range(m - length + 1):
-            substr = str1[start:start+length]
-            
-            # Check if substring exists in both strings
-            if (substr in str2 and 
-                str1.index(substr) == start and 
-                str2.index(substr) is not None):
+    # Build the dynamic programming matrix
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if str1[i-1] == str2[j-1]:
+                dp[i][j] = dp[i-1][j-1] + 1
                 
-                if is_acceptable_substring(substr):
-                    return substr
+                # Track the longest substring
+                if dp[i][j] > max_length:
+                    max_length = dp[i][j]
+                    end_row = i
+                    end_col = j
+            else:
+                dp[i][j] = 0
 
+    # If no common substring found
+    if max_length == 0:
+        return ""
+
+    # Extract the substring 
+    start_row = end_row - max_length
+    start_col = end_col - max_length
+    
+    # Return the substring, prioritizing the first occurrence
+    result = str1[start_row:end_row]
+    
+    # Verify the substring exists in both strings at the correct position
+    if result in str2 and str1.find(result) == start_row:
+        return result
+    
     return ""
