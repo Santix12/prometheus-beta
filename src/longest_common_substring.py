@@ -37,7 +37,7 @@ def longest_common_substring(str1: str, str2: str) -> str:
     # Build the dynamic programming matrix
     for i in range(1, m + 1):
         for j in range(1, n + 1):
-            # If characters match, extend the previous substring
+            # If characters match (case-sensitive) and are equal, extend the previous substring
             if str1[i-1] == str2[j-1]:
                 dp[i][j] = dp[i-1][j-1] + 1
                 
@@ -48,5 +48,15 @@ def longest_common_substring(str1: str, str2: str) -> str:
             else:
                 dp[i][j] = 0
 
-    # Extract and return the longest common substring
-    return str1[end_index - max_length + 1 : end_index + 1] if max_length > 0 else ""
+    # Precisely extract and return the longest common substring
+    if max_length == 0:
+        return ""
+    
+    # Ensure we return the first occurrence of the longest common substring
+    result = str1[end_index - max_length + 1 : end_index + 1]
+    
+    # Additional check to verify the substring actually appears in both strings
+    if result in str1 and result in str2:
+        return result
+    
+    return ""
