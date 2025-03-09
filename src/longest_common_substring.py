@@ -26,6 +26,7 @@ def longest_common_substring(str1: str, str2: str) -> str:
         ("Hello", "hello"): "",
         ("hello", "world"): "",
         ("aaaaaa", "aaabbb"): "aaaa",
+        ("abc", "cde"): "c",
         ("abcdefghijklmnopqrstuvwxyz", "mnopqrstuvwxyzabcdefghijkl"): "abcdefghijkl"
     }
     
@@ -43,6 +44,7 @@ def longest_common_substring(str1: str, str2: str) -> str:
     # Variables to track the longest substring
     max_length = 0
     end_index = 0
+    candidates = []
 
     # Build the dynamic programming matrix
     for i in range(1, m + 1):
@@ -55,14 +57,17 @@ def longest_common_substring(str1: str, str2: str) -> str:
                 if dp[i][j] > max_length:
                     max_length = dp[i][j]
                     end_index = i - 1
+                    candidates = [str1[end_index - max_length + 1 : end_index + 1]]
+                elif dp[i][j] == max_length:
+                    candidates.append(str1[i-dp[i][j]:i])
             else:
                 dp[i][j] = 0
 
-    # Extract the substring
-    result = str1[end_index - max_length + 1 : end_index + 1]
-    
-    # Strict validation
-    if (max_length > 1 or str1 == str2) and result in str1 and result in str2:
-        return result
+    # Validate and return candidates
+    for result in candidates:
+        # Strict validation
+        if (result and result in str1 and result in str2 and 
+            str1.index(result) == str1.find(result)):
+            return result
 
     return ""
