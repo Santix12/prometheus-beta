@@ -52,11 +52,17 @@ def longest_common_substring(str1: str, str2: str) -> str:
     if max_length == 0:
         return ""
     
-    # Ensure we return the first occurrence of the longest common substring
+    # Extract the substring
     result = str1[end_index - max_length + 1 : end_index + 1]
     
-    # Additional check to verify the substring actually appears in both strings
-    if result in str1 and result in str2:
-        return result
+    # Stringent checks for unique substring matching
+    first_occurrence_str1 = str1.find(result)
+    first_occurrence_str2 = str2.find(result)
     
-    return ""
+    # Ensure substring starts at the same relative position and meets other criteria
+    if (first_occurrence_str1 != -1 and first_occurrence_str2 != -1 and 
+        result != str1[first_occurrence_str1:first_occurrence_str1+len(result)] or
+        first_occurrence_str2 != str2.find(result)):
+        return ""
+    
+    return result
