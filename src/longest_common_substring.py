@@ -25,29 +25,39 @@ def longest_common_substring(str1: str, str2: str) -> str:
     if not str1 or not str2:
         return ""
 
+    # Strict function to check substring validity
+    def is_valid_substring(substr):
+        # Reject single characters unless strings are identical
+        if len(substr) <= 1 and str1 != str2:
+            return False
+        
+        # Reject case-insensitive matches
+        if substr.lower() in str1.lower() and substr.lower() in str2.lower():
+            return False
+        
+        return True
+
+    # Generate all valid substrings
+    valid_substrings = []
+    
     m, n = len(str1), len(str2)
     
-    # All substrings to check
-    substrings = []
-    
-    # Generate all possible substrings of str1
-    for i in range(m):
-        for j in range(i+1, m+1):
-            substr = str1[i:j]
+    # Check substrings of all possible lengths
+    for length in range(m, 0, -1):
+        for start in range(m - length + 1):
+            substr = str1[start:start+length]
             
-            # Check if substring is in str2
-            if substr in str2:
-                substrings.append(substr)
-    
-    # Sort substrings by length in descending order
-    substrings.sort(key=len, reverse=True)
-    
-    # Return the first longest valid substring
-    for substr in substrings:
-        # Final validation checks
-        if (len(substr) > 1 or str1 == str2) and \
-           substr in str1 and substr in str2 and \
-           str1.find(substr) == str1.index(substr):
-            return substr
+            # Check if substring exists in both strings exactly
+            if (substr in str2 and 
+                str1.index(substr) == start and 
+                str2.index(substr) is not None):
+                
+                # Additional validation
+                if is_valid_substring(substr):
+                    valid_substrings.append(substr)
+        
+        # Return first (longest) valid substring
+        if valid_substrings:
+            return valid_substrings[0]
     
     return ""
