@@ -21,6 +21,7 @@ def write_string_to_file(file_path: str, content: str, mode: str = 'w') -> None:
         TypeError: If file_path or content is not a string.
         ValueError: If mode is not one of 'w', 'a', or 'x'.
         PermissionError: If the file cannot be written due to permissions.
+        FileExistsError: If file exists when using exclusive mode 'x'.
         IOError: For other file-related errors.
     """
     # Validate input types
@@ -37,6 +38,9 @@ def write_string_to_file(file_path: str, content: str, mode: str = 'w') -> None:
     try:
         with open(file_path, mode, encoding='utf-8') as file:
             file.write(content)
+    except FileExistsError:
+        # Explicitly re-raise FileExistsError for 'x' mode
+        raise
     except PermissionError:
         raise PermissionError(f"Permission denied when trying to write to {file_path}")
     except IOError as e:
