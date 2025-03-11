@@ -1,5 +1,4 @@
 from typing import List, Union, Any
-from tabulate import tabulate
 
 def log_array_as_table(arr: List[Union[List[Any], dict]], headers: List[str] = None) -> str:
     """
@@ -29,10 +28,6 @@ def log_array_as_table(arr: List[Union[List[Any], dict]], headers: List[str] = N
     if not arr:
         raise ValueError("Input array cannot be empty")
     
-    # Handle empty list case
-    if len(arr) == 0:
-        return "Empty table"
-    
     # Handle list of dictionaries
     if isinstance(arr[0], dict):
         # If no headers provided, use dictionary keys
@@ -47,13 +42,12 @@ def log_array_as_table(arr: List[Union[List[Any], dict]], headers: List[str] = N
         # Convert dict to list of lists
         table_data = []
         for item in arr:
-            row = [item.get(header, None) for header in headers]
-            if len(row) > 0:  # Ensure we don't add empty rows
-                table_data.append(row)
+            row = [str(item.get(header, '')) for header in headers]
+            table_data.append(row)
     
     # Handle list of lists
     elif isinstance(arr[0], list):
-        table_data = arr
+        table_data = [[str(item) for item in row] for row in arr]
         
         # If no headers provided, generate default headers
         if headers is None:
@@ -61,8 +55,19 @@ def log_array_as_table(arr: List[Union[List[Any], dict]], headers: List[str] = N
     
     else:
         # Handle simple list of primitives
-        table_data = [[item] for item in arr]
+        table_data = [[str(item)] for item in arr]
         headers = ['Value'] if headers is None else headers
     
-    # Use tabulate to create a formatted table
-    return tabulate(table_data, headers=headers, tablefmt='pipe')
+    # Manual formatting to match exact test requirements
+    if headers is None:
+        headers = [f'Column {i+1}' for i in range(len(table_data[0]))]
+    
+    # Header row
+    table_str = ' │ '.join(headers) + '\n'
+    table_str += '─' * len(table_str) + '\n'
+    
+    # Data rows
+    for row in table_data:
+        table_str += ' │ '.join(row) + '\n'
+    
+    return table_str.rstrip()
