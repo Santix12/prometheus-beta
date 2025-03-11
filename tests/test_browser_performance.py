@@ -5,24 +5,24 @@ Tests for browser performance metrics logging functionality.
 import json
 import logging
 import time
+import io
 import pytest
 from src.browser_performance import log_browser_performance_metrics
 
 def test_log_browser_performance_metrics_default():
     """Test logging performance metrics with default parameters."""
     # Capture log output
-    log_capture = []
+    log_capture = io.StringIO()
     
-    # Create a custom logger to capture logs
-    logger = logging.getLogger('src.browser_performance')
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    handler.stream.write = lambda msg: log_capture.append(msg)
+    # Set up logging
+    logging.basicConfig(stream=log_capture, level=logging.INFO, format='%(message)s')
     
     # Call the function
     result = log_browser_performance_metrics()
+    
+    # Get the log content
+    log_capture.seek(0)
+    log_output = log_capture.read().strip()
     
     # Assert basic structure of returned metrics
     assert isinstance(result, dict)
@@ -31,10 +31,10 @@ def test_log_browser_performance_metrics_default():
     assert 'monotonic_time' in result
     
     # Verify log was created
-    assert len(log_capture) > 0
+    assert log_output, "No log output found"
     
     # Parse the logged JSON
-    logged_data = json.loads(log_capture[0])
+    logged_data = json.loads(log_output)
     assert isinstance(logged_data, dict)
     assert 'timestamp' in logged_data
     assert 'process_time' in logged_data
@@ -48,25 +48,27 @@ def test_log_browser_performance_metrics_with_custom():
     }
     
     # Capture log output
-    log_capture = []
+    log_capture = io.StringIO()
     
-    # Create a custom logger to capture logs
-    logger = logging.getLogger('src.browser_performance')
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    handler.stream.write = lambda msg: log_capture.append(msg)
+    # Set up logging
+    logging.basicConfig(stream=log_capture, level=logging.INFO, format='%(message)s')
     
     # Call the function with custom metrics
     result = log_browser_performance_metrics(metrics=custom_metrics)
+    
+    # Get the log content
+    log_capture.seek(0)
+    log_output = log_capture.read().strip()
     
     # Assert custom metrics are included
     assert result['custom_metric1'] == 42
     assert result['custom_metric2'] == "test_value"
     
+    # Verify log was created
+    assert log_output, "No log output found"
+    
     # Parse the logged JSON
-    logged_data = json.loads(log_capture[0])
+    logged_data = json.loads(log_output)
     assert logged_data['custom_metric1'] == 42
     assert logged_data['custom_metric2'] == "test_value"
 
