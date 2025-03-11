@@ -24,6 +24,9 @@ def min_coins(coins, amount):
     if amount == 0:
         return 0
     
+    # Sort coins in descending order for greedy approach first
+    coins.sort(reverse=True)
+    
     # Initialize dp array with amount + 1 (impossible value)
     # dp[i] represents the minimum coins needed to make amount i
     dp = [amount + 1] * (amount + 1)
