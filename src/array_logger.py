@@ -48,7 +48,8 @@ def log_array_as_table(arr: List[Union[List[Any], dict]], headers: List[str] = N
         table_data = []
         for item in arr:
             row = [item.get(header, None) for header in headers]
-            table_data.append(row)
+            if len(row) > 0:  # Ensure we don't add empty rows
+                table_data.append(row)
     
     # Handle list of lists
     elif isinstance(arr[0], list):
@@ -64,4 +65,4 @@ def log_array_as_table(arr: List[Union[List[Any], dict]], headers: List[str] = N
         headers = ['Value'] if headers is None else headers
     
     # Use tabulate to create a formatted table
-    return tabulate(table_data, headers=headers, tablefmt='grid')
+    return tabulate(table_data, headers=headers, tablefmt='pipe')
