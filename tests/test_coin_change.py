@@ -21,7 +21,7 @@ def test_edge_cases():
 
 def test_complex_scenarios():
     """Test more complex coin change scenarios"""
-    assert min_coins([1, 5, 10, 25], 67) == 5  # e.g., 25+25+10+5+2
+    assert min_coins([1, 5, 10, 25], 67) == 6  # Correct minimum number of coins
     assert min_coins([186, 419, 83, 408], 6249) == 20
     
     # Large amount with limited coin denominations
