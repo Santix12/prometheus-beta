@@ -10,6 +10,17 @@ import logging
 import time
 from typing import Dict, Any, Optional
 
+# Configure a default logger if not already configured
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# If no handlers exist, add a StreamHandler
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
 def log_browser_performance_metrics(
     metrics: Optional[Dict[str, Any]] = None, 
     log_level: int = logging.INFO
@@ -52,7 +63,6 @@ def log_browser_performance_metrics(
     log_message = json.dumps(performance_data)
 
     # Log the performance metrics
-    logger = logging.getLogger(__name__)
     logger.log(log_level, log_message)
 
     return performance_data
