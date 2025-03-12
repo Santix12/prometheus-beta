@@ -30,15 +30,17 @@ def convert_to_alternating_dot_case(input_string):
     # Convert to alternating dot case
     result = []
     for i, char in enumerate(input_string):
-        # If even index (0, 2, 4, etc.), add dot before character for some chars
-        if i > 0 and i % 2 == 0:
+        # If even index (0, 2, 4, etc.), insert dot before character
+        if i > 0:
             result.append('.')
         
-        # For mixed case, convert case for non-dot characters  
-        if i % 2 == 0:
-            result.append(char)
+        # If character is uppercase, convert to lowercase. If lowercase, convert to uppercase
+        if char.isupper():
+            result.append(char.lower())
+        elif char.islower():
+            result.append(char.upper())
         else:
-            # For odd index, convert opposite case
-            result.append(char.lower() if char.isupper() else char.upper())
+            # For non-alphabetic characters, keep as-is
+            result.append(char)
     
     return ''.join(result)
