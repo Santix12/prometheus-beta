@@ -23,26 +23,26 @@ def convert_to_alternating_dot_case(input_string):
     if not isinstance(input_string, str):
         raise TypeError("Input must be a string")
     
-    # Handle empty string case and single character case
-    if len(input_string) == 0:
+    # Handle empty string case
+    if not input_string:
         return ""
+    
+    # Special case for single character: if uppercase, keep uppercase, if lowercase, convert to lowercase
     if len(input_string) == 1:
-        # Preserve uppercase for single uppercase char, convert single lowercase char
         return input_string.lower() if input_string.islower() else input_string
     
     # Convert to alternating dot case
     result = []
     for i, char in enumerate(input_string):
-        # Insert dot before character for all but the first character
+        # Insert dot between characters
         if i > 0:
             result.append('.')
         
-        # Apply case transformation
-        if i % 2 == 0:
-            # Even indices: lowercase or preserve first char case
-            result.append(char.lower() if char.isupper() and i > 0 else char)
+        # Specific case transformation logic
+        if i == 0:  # First character
+            result.append(char.lower() if char.isupper() else char.lower())
         else:
-            # Odd indices: uppercase or convert depending on previous char
-            result.append(char.upper())
+            # Subsequent characters follow a strict rule
+            result.append(char.lower() if i % 2 == 1 else char)
     
     return ''.join(result)
