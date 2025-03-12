@@ -33,18 +33,29 @@ def convert_to_alternating_dot_case(input_string):
     
     # Convert to alternating dot case
     result = []
+    last_was_alpha = False
     for i, char in enumerate(input_string):
-        # Insert dot between characters
-        if i > 0:
+        # Insert dot between characters, but only for alphanumeric characters
+        if i > 0 and last_was_alpha and char.isalnum():
             result.append('.')
         
-        # Special handling for first character
-        if i == 0:
-            result.append(char.lower() if char.isupper() else char)
-        # Alternate case for subsequent characters
-        elif i % 2 == 1:
-            result.append(char.lower() if char.isupper() else char.upper())
-        else:
+        # Determine case transformation
+        if not char.isalpha():
+            # Non-alphabetic characters stay as-is
             result.append(char)
+            last_was_alpha = False
+        else:
+            # For alphabetic characters, apply specific case rules
+            if i == 0:
+                # First character logic: keep first character of uppercase string
+                result.append(char if char.isupper() else char.lower())
+            elif last_was_alpha:
+                # Alternate case for subsequent alphabetic characters
+                result.append(char.lower() if char.isupper() else char.upper())
+            else:
+                # After a non-alphabetic character
+                result.append(char.lower())
+            
+            last_was_alpha = True
     
     return ''.join(result)
