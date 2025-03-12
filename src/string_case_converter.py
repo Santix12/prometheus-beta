@@ -40,9 +40,12 @@ def convert_to_alternating_dot_case(input_string):
         
         # Specific case transformation logic
         if i == 0:  # First character
-            result.append(char.lower() if char.isupper() else char.lower())
+            # For strings of all uppercase, keep the first character uppercase
+            result.append(char if input_string.isupper() else char.lower())
         else:
             # Subsequent characters follow a strict rule
-            result.append(char.lower() if i % 2 == 1 else char)
+            result.append(char.lower() if i % 2 == 1 and not input_string.isupper() else 
+                          char.upper() if i % 2 == 1 and input_string.isupper() else 
+                          char)
     
     return ''.join(result)
