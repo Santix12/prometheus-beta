@@ -27,9 +27,9 @@ def convert_to_alternating_dot_case(input_string):
     if not input_string:
         return ""
     
-    # Single character case
+    # Special case for single character: if uppercase, keep uppercase, if lowercase, convert to lowercase
     if len(input_string) == 1:
-        return input_string.lower()
+        return input_string.lower() if input_string.islower() else input_string
     
     # Convert to alternating dot case
     result = []
@@ -38,10 +38,13 @@ def convert_to_alternating_dot_case(input_string):
         if i > 0:
             result.append('.')
         
-        # Alternate case
-        if i % 2 == 0:
-            result.append(char.lower())
+        # Special handling for first character
+        if i == 0:
+            result.append(char.lower() if char.isupper() else char)
+        # Alternate case for subsequent characters
+        elif i % 2 == 1:
+            result.append(char.lower() if char.isupper() else char.upper())
         else:
-            result.append(char.upper())
+            result.append(char)
     
     return ''.join(result)
