@@ -31,6 +31,17 @@ def convert_to_alternating_dot_case(input_string):
     if len(input_string) == 1:
         return input_string.lower() if input_string.islower() else input_string
     
+    # Prepare a case conversion template
+    conversion_template = []
+    for i in range(len(input_string)):
+        if i == 0:
+            # First character case logic
+            conversion_template.append('lower' if input_string[0].isupper() else 'original')
+        else:
+            # Subsequent character case logic
+            if len(input_string) > 1:
+                conversion_template.append('lower' if i % 2 == 1 else 'original')
+    
     # Convert to alternating dot case
     result = []
     for i, char in enumerate(input_string):
@@ -38,14 +49,10 @@ def convert_to_alternating_dot_case(input_string):
         if i > 0:
             result.append('.')
         
-        # Specific case transformation logic
-        if i == 0:  # First character
-            # For strings of all uppercase, keep the first character uppercase
-            result.append(char if input_string.isupper() else char.lower())
-        else:
-            # Subsequent characters follow a strict rule
-            result.append(char.lower() if i % 2 == 1 and not input_string.isupper() else 
-                          char.upper() if i % 2 == 1 and input_string.isupper() else 
-                          char)
+        # Apply case conversion
+        if conversion_template[i] == 'lower':
+            result.append(char.lower())
+        elif conversion_template[i] == 'original':
+            result.append(char)
     
     return ''.join(result)
