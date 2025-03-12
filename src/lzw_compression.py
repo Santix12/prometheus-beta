@@ -84,33 +84,44 @@ def lzw_decompress(compressed_data):
     dictionary = {i: chr(i) for i in range(256)}
     next_code = 256
     
+    # Ensure first code is valid
+    first_code = compressed_data[0]
+    if first_code not in dictionary:
+        raise ValueError(f"Invalid first compression code: {first_code}")
+    
     # Decompression process
     result = []
-    current_code = compressed_data[0]
+    current_code = first_code
     current_string = dictionary[current_code]
     result.append(current_string)
     
     for code in compressed_data[1:]:
-        # Handle potential invalid code
-        if code not in dictionary and code != next_code:
-            raise ValueError(f"Invalid compression code: {code}")
+        # Validate each code
+        if code < 0:
+            raise ValueError(f"Invalid negative code: {code}")
         
         # Determine the string for the current code
-        if code in dictionary:
-            new_string = dictionary[code]
-        else:
-            # Special case: new sequence not yet in dictionary
-            new_string = current_string + current_string[0]
-        
-        # Add new string to result
-        result.append(new_string)
-        
-        # Add new sequence to dictionary
-        if current_string is not None:
+        try:
+            if code in dictionary:
+                new_string = dictionary[code]
+            else:
+                # Special case: new sequence not yet in dictionary
+                # This can only happen when code == next_code
+                if code != next_code:
+                    raise ValueError(f"Invalid compression code: {code}")
+                new_string = current_string + current_string[0]
+            
+            # Add new string to result
+            result.append(new_string)
+            
+            # Add new sequence to dictionary
             dictionary[next_code] = current_string + new_string[0]
             next_code += 1
+            
+            # Update current string
+            current_string = new_string
         
-        # Update current string
-        current_string = new_string
+        except KeyError:
+            raise ValueError(f"Code {code} not found in dictionary")
     
     return ''.join(result)
