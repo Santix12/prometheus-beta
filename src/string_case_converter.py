@@ -27,20 +27,21 @@ def convert_to_alternating_dot_case(input_string):
     if not input_string:
         return ""
     
+    # Single character case
+    if len(input_string) == 1:
+        return input_string.lower()
+    
     # Convert to alternating dot case
     result = []
     for i, char in enumerate(input_string):
-        # If even index (0, 2, 4, etc.), insert dot before character
+        # Insert dot between characters
         if i > 0:
             result.append('.')
         
-        # If character is uppercase, convert to lowercase. If lowercase, convert to uppercase
-        if char.isupper():
+        # Alternate case
+        if i % 2 == 0:
             result.append(char.lower())
-        elif char.islower():
-            result.append(char.upper())
         else:
-            # For non-alphabetic characters, keep as-is
-            result.append(char)
+            result.append(char.upper())
     
     return ''.join(result)
